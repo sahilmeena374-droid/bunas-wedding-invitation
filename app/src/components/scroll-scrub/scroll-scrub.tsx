@@ -77,6 +77,7 @@ interface RuntimeSegment extends Segment {
   end: number;
   current: number;
   target: number;
+  seekPending: boolean;
   visible: boolean;
   loading: boolean;
   ready: boolean;
@@ -229,6 +230,7 @@ export function ScrollScrub({
       ready: false,
       start: 0,
       target: 0,
+      seekPending: false,
       visible: index === 0,
     }));
 
@@ -380,15 +382,12 @@ export function ScrollScrub({
           },
           { once: true }
         );
-        video.addEventListener(
-          "seeked",
-          () => {
-            if (segment.video === video && segment.loadedSource === source) {
-              segment.layer.dataset.videoPainted = "true";
-            }
-          },
-          { once: true }
-        );
+        video.addEventListener("seeked", () => {
+          if (segment.video === video && segment.loadedSource === source) {
+            segment.seekPending = false;
+            segment.layer.dataset.videoPainted = "true";
+          }
+        });
 
         segment.layer.append(video);
         segment.objectUrl = objectUrl;
@@ -468,26 +467,16 @@ export function ScrollScrub({
 
     const updateVideos = () => {
       for (const segment of runtime) {
-        const { video } = segment;
-        if (!video || !segment.ready || video.seeking) {
-          continue;
-        }
-        if (
-          !segment.visible &&
-          Math.abs(segment.current - segment.target) < 0.002
-        ) {
-          continue;
-        }
-
-        segment.current += (segment.target - segment.current) * 0.2;
-        const targetTime =
-          clamp(segment.current, 0, 0.999) * (video.duration || 1);
-        const epsilon = isMobile() ? 0.02 : 0.008;
+        const video = segment.video;
+        if (!video || !segment.ready || video.seeking || segment.seekPending) continue;
+        const targetTime = clamp(segment.target, 0, 0.999) * Math.max(video.duration || 1, 0.001);
+        const epsilon = isMobile() ? 0.035 : 0.012;
         if (Math.abs(video.currentTime - targetTime) > epsilon) {
           try {
+            segment.seekPending = true;
             video.currentTime = targetTime;
           } catch {
-            // Keep the last painted frame while the browser catches up.
+            segment.seekPending = false;
           }
         }
       }
