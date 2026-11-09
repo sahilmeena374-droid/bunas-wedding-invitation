@@ -1,0 +1,405 @@
+/* Cascade layer order: reset lowest, then Tailwind/Quanta base, then
+ * components and finally utilities — so Quanta's q-* utilities (e.g.
+ * q-button-*) always win over global element resets. */
+@layer reset, theme, base, components, utilities;
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap');
+
+@import "tailwindcss" source(none);
+@source "../src";
+@source "../packages/app-landing/src";
+@source "../packages/quanta/src";
+@import "@higgsfield/quanta/tailwind.css";
+
+/* New in-app Quanta-style components (moved out of the quanta package). Their
+ * CSS uses Tailwind v4 @utility/@source, so it must load through this tailwind
+ * entry. Ordering mirrors quanta's components.css (composer after button;
+ * media-card + generation-card after media). */
+@import "./components/composer/composer.css";
+@import "./components/media-card/media-card.css";
+@import "./components/generation-card/generation-card.css";
+@import "./components/setting-trigger/setting-trigger.css";
+@import "./components/prompt-box/prompt-box.css";
+@import "./components/icon-tile/icon-tile.css";
+
+@import "tw-animate-css";
+/* shadcn v4 base (scrollbar/scroll-fade utilities, toast base) for src/components/ui */
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:where([data-theme="default-dark"], [data-theme="default-dark"] *));
+
+/*
+ * Quanta is the visual source of truth. This file imports Quanta's Tailwind
+ * entry once; that entry brings in primitives, semantic theme variables,
+ * typography, z-index, border-width, and q-* component utilities.
+ *
+ * Generated app layout should use normal Tailwind spacing (`p-4`, `gap-2`,
+ * `mt-6`, `h-10`) and Quanta semantic utilities for color/type
+ * (`bg-q-background-primary`, `text-q-body-md-regular`). Do not use old numeric
+ * token classes such as `px-400` / `gap-200`, and do not reach for raw
+ * q-spacing vars in app code. Quanta component internals own their q-* classes.
+ *
+ * The `--spacing: 0.25rem` restoration keeps native Tailwind layout utilities
+ * stable for generated apps and legacy scaffold components. The inline theme
+ * aliases below keep shadcn-style imports rendering while new UI migrates to
+ * Quanta components.
+ */
+@theme {
+  --spacing: 0.25rem;
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+
+  --color-background: var(--hf-color-background-primary);
+  --color-foreground: var(--hf-color-text-primary);
+  --color-card: var(--hf-color-background-secondary);
+  --color-card-foreground: var(--hf-color-text-primary);
+  --color-popover: var(--hf-color-background-secondary);
+  --color-popover-foreground: var(--hf-color-text-primary);
+  --color-primary: var(--hf-color-button-brand);
+  --color-primary-foreground: var(--hf-color-button-label-brand);
+  --color-secondary: var(--hf-color-background-secondary);
+  --color-secondary-foreground: var(--hf-color-text-primary);
+  --color-muted: var(--hf-color-background-tertiary);
+  --color-muted-foreground: var(--hf-color-text-secondary);
+  --color-accent: var(--hf-color-overlay-hover);
+  --color-accent-foreground: var(--hf-color-text-primary);
+  /* shadcn v4 components use text-destructive on tinted fills — needs the
+   * bright brand red, not the dark error surface */
+  --color-destructive: var(--hf-color-button-destructive);
+  --color-destructive-foreground: var(--hf-color-button-label-destructive);
+  --color-border: var(--hf-color-border-default);
+  --color-input: var(--hf-color-border-default);
+  --color-ring: var(--hf-color-border-focus);
+  --color-ring-offset-background: var(--hf-color-background-primary);
+
+  --color-chart-1: var(--hf-color-lime-500);
+  --color-chart-2: var(--hf-color-pink-500);
+  --color-chart-3: var(--hf-color-blue-500);
+  --color-chart-4: var(--hf-color-yellow-500);
+  --color-chart-5: var(--hf-color-purple-500);
+
+  --color-sidebar: var(--hf-color-background-secondary);
+  --color-sidebar-foreground: var(--hf-color-text-primary);
+  --color-sidebar-primary: var(--hf-color-button-brand);
+  --color-sidebar-primary-foreground: var(--hf-color-button-label-brand);
+  --color-sidebar-accent: var(--hf-color-overlay-hover);
+  --color-sidebar-accent-foreground: var(--hf-color-text-primary);
+  --color-sidebar-border: var(--hf-color-border-default);
+  --color-sidebar-ring: var(--hf-color-border-focus);
+
+  --font-grotesk: var(--hf-type-family-grotesk);
+}
+
+/* Fills used by src/components/ui (badge, tabs, marketing-button), mapped to
+ * Quanta's --hf-gradient-* tokens. */
+@utility badge-gradient-blue {
+  background-image: var(--hf-gradient-badge-blue);
+}
+@utility badge-gradient-pink {
+  background-image: var(--hf-gradient-badge-pink);
+}
+@utility badge-gradient-purple {
+  background-image: var(--hf-gradient-badge-purple);
+}
+@utility glass-sheen {
+  background-image: var(--hf-gradient-glass-sheen);
+}
+@utility gloss-lime {
+  background-image:
+    var(--hf-gradient-special-gloss-lime-angled),
+    linear-gradient(90deg, var(--hf-color-lime-500), var(--hf-color-lime-500));
+}
+@utility gloss-pink {
+  background-image:
+    var(--hf-gradient-special-gloss-pink),
+    linear-gradient(90deg, var(--hf-color-pink-500), var(--hf-color-pink-500));
+}
+
+/* Toast skin (Figma node 4085:2671): compact glass pill, kind-colored fills */
+[data-sonner-toast][data-styled="true"] {
+  width: fit-content;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--hf-color-transparent-light-05);
+  border-radius: var(--hf-radius-300, 12px);
+  background: var(--hf-color-glass-dark);
+  backdrop-filter: blur(40px);
+  box-shadow: 0 6px 6px rgb(0 0 0 / 0.25);
+  color: var(--hf-color-text-primary);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+[data-sonner-toast][data-type="success"] {
+  border-color: var(--hf-color-transparent-light-15);
+  background: #68b922; /* toast/success — raw value in Figma, no hf token */
+  backdrop-filter: none;
+}
+[data-sonner-toast].toast-new {
+  border-color: var(--hf-color-transparent-light-15);
+  background: #7a58ff; /* toast/new — raw value in Figma, no hf token */
+  backdrop-filter: none;
+}
+[data-sonner-toast] [data-close-button] {
+  position: static;
+  order: 9;
+  margin-left: 4px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  transform: none;
+}
+[data-sonner-toast] [data-close-button]:hover {
+  background: var(--hf-color-overlay-hover);
+}
+
+:root {
+  --radius: 0.625rem;
+}
+
+@layer base {
+  html {
+    background-color: var(--hf-color-background-primary);
+    color: var(--hf-color-text-primary);
+    color-scheme: dark;
+  }
+
+  body {
+    min-height: 100vh;
+    background-color: var(--hf-color-background-primary);
+    color: var(--hf-color-text-primary);
+    font-family: var(--hf-type-family-secondary);
+  }
+
+  * {
+    border-color: var(--hf-color-border-default);
+  }
+}
+
+/* Bunara family wedding invitation: light heritage stationery system. */
+
+:root {
+  --wedding-paper: #f5efe4;
+  --wedding-paper-deep: #e9dfcf;
+  --wedding-ink: #4a1e2a;
+  --wedding-muted: #765b5c;
+  --wedding-accent: #9b3448;
+  --wedding-gold: #a98b4d;
+  --wedding-line: rgba(91, 42, 48, 0.24);
+  --wedding-display: 'Cormorant Garamond', Georgia, serif;
+  --wedding-body: 'DM Sans', Arial, sans-serif;
+}
+
+html { background: var(--wedding-paper) !important; color: var(--wedding-ink) !important; color-scheme: light !important; scroll-behavior: smooth; }
+body { background: var(--wedding-paper) !important; color: var(--wedding-ink) !important; font-family: var(--wedding-body) !important; }
+.wedding-site { overflow: clip; background: var(--wedding-paper); color: var(--wedding-ink); }
+.site-nav { position: fixed; z-index: 30; top: 0; left: 0; right: 0; display: grid; grid-template-columns: 3rem minmax(10rem, 1fr) auto auto auto; align-items: center; gap: clamp(.7rem, 1.5vw, 1.5rem); padding: 1rem clamp(1.1rem, 4vw, 4rem); color: #f8f1e7; background: linear-gradient(180deg, rgba(48,20,28,.72), rgba(48,20,28,0)); }
+.nav-mark { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border: 1px solid rgba(248,241,231,.58); border-radius: 50%; color: #f8f1e7; text-decoration: none; font-family: var(--wedding-display); font-size: 1.2rem; }
+.nav-family { color: #fff8ef; text-decoration: none; font-size: .82rem; letter-spacing: .1em; text-transform: uppercase; }
+.nav-family span { color: #d6bd8b; padding: 0 .3rem; }
+.site-nav nav { display: flex; gap: clamp(.8rem, 2vw, 2rem); }
+.site-nav nav a, .nav-share { color: #fff8ef; text-decoration: none; font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; }
+.site-nav nav a:hover, .nav-share:hover { color: #e3c98f; }
+.nav-share { padding: .7rem 1rem; border: 1px solid rgba(255,248,239,.5); border-radius: 99px; background: transparent; cursor: pointer; font: inherit; }
+.language-toggle { padding: .58rem .85rem; border: 1px solid rgba(255,248,239,.55); border-radius: 99px; background: rgba(255,248,239,.1); color: #fff8ef; cursor: pointer; font-size: .72rem; font-weight: 700; letter-spacing: .04em; }
+.language-toggle:hover { color: #e3c98f; border-color: #e3c98f; }
+.hero-wrap { position: relative; background: var(--wedding-paper); }
+.hero-wrap .scroll-scrub { --ss-bg: #f5efe4; --ss-ink: #4a1e2a; --ss-muted: #6d5052; --ss-accent: #9b3448; }
+.hero-wrap .scroll-scrub__stage { background: var(--wedding-paper); }
+.hero-wrap .scroll-scrub__poster, .hero-wrap .scroll-scrub__video { object-fit: cover; }
+.hero-wrap .scroll-scrub__copy { width: min(43rem, 54vw); padding: clamp(1.2rem, 3vw, 2.6rem); background: rgba(245,239,228,.78); border: 1px solid rgba(169,139,77,.55); box-shadow: 0 24px 80px rgba(55,27,32,.12); backdrop-filter: blur(8px); }
+.hero-wrap .scroll-scrub__copy::before { display: none; }
+.hero-wrap .scroll-scrub__kicker { color: var(--wedding-accent); font-family: var(--wedding-body); font-size: .72rem; letter-spacing: .18em; }
+.hero-wrap .scroll-scrub__title { color: var(--wedding-ink); font-family: var(--wedding-display); font-size: clamp(4rem, 8vw, 8rem); font-weight: 500; letter-spacing: -.045em; }
+.hero-wrap .scroll-scrub__body { color: var(--wedding-muted); font-family: var(--wedding-body); font-size: clamp(.95rem, 1.2vw, 1.1rem); }
+.hero-wrap .scroll-scrub__tags li { border-color: rgba(155,52,72,.35); color: var(--wedding-ink); font-size: .75rem; letter-spacing: .05em; }
+.hero-wrap .scroll-scrub__route { top: auto; bottom: 2rem; }
+.hero-wrap .scroll-scrub__route-button { color: var(--wedding-ink); }
+.hero-bottomline { position: absolute; z-index: 5; right: clamp(1.2rem, 4vw, 4rem); bottom: 1.5rem; left: clamp(1.2rem, 4vw, 4rem); display: flex; justify-content: space-between; color: var(--wedding-muted); font-size: .62rem; letter-spacing: .18em; pointer-events: none; }
+.section-number { color: var(--wedding-accent); font-size: .68rem; font-weight: 700; letter-spacing: .17em; }
+.section-number span { color: var(--wedding-muted); font-weight: 500; }
+.eyebrow { color: var(--wedding-accent); font-size: .68rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; }
+.intro-band { display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: end; gap: 2rem; padding: clamp(4rem, 9vw, 9rem) clamp(1.3rem, 8vw, 8rem); border-top: 1px solid var(--wedding-line); }
+.intro-copy h2, .inside-heading h2, .celebrations-title h2, .venue-copy h2, .site-footer h2 { margin: .8rem 0 1.2rem; color: var(--wedding-ink); font-family: var(--wedding-display); font-size: clamp(3rem, 6vw, 6.2rem); font-weight: 500; line-height: .92; letter-spacing: -.035em; }
+.intro-copy h2 em, .inside-heading h2 em, .celebrations-title h2 em, .venue-copy h2 em, .site-footer h2 em { color: var(--wedding-accent); font-weight: 400; }
+.intro-lede { max-width: 42rem; color: var(--wedding-muted); font-size: 1rem; line-height: 1.8; }
+.date-stamp { display: flex; flex-direction: column; align-items: flex-end; gap: .3rem; color: var(--wedding-muted); font-size: .63rem; letter-spacing: .15em; }
+.date-stamp strong { color: var(--wedding-ink); font-family: var(--wedding-display); font-size: clamp(3rem, 5vw, 5rem); font-weight: 500; line-height: 1; }
+.date-stamp small { color: var(--wedding-accent); font-size: .55em; }
+.cover-reproduction { display: grid; grid-template-columns: minmax(0, 1fr) 12rem; align-items: center; gap: 3rem; padding: 0 clamp(1.3rem, 8vw, 8rem) clamp(5rem, 10vw, 10rem); }
+.cover-frame { position: relative; max-width: 60rem; margin: auto; padding: clamp(2rem, 5vw, 4rem); border: 1px solid var(--wedding-accent); outline: 1px solid rgba(155,52,72,.25); outline-offset: -8px; background: radial-gradient(ellipse at 50% 38%, rgba(255,255,255,.82), rgba(245,239,228,.55) 72%); text-align: center; }
+.cover-topline { display: flex; justify-content: space-between; color: var(--wedding-accent); font-size: .7rem; letter-spacing: .13em; }
+.cover-ganesha { display: grid; place-items: center; width: clamp(5.5rem, 12vw, 9rem); aspect-ratio: 1; margin: 2rem auto 1rem; border: 2px solid var(--wedding-gold); outline: 1px solid rgba(169,139,77,.55); outline-offset: 5px; border-radius: 50%; color: var(--wedding-gold); font-family: var(--wedding-display); font-size: clamp(3rem, 6vw, 5rem); box-shadow: inset 0 0 0 7px rgba(169,139,77,.12); }
+.cover-script { margin: 0 0 2.4rem; color: var(--wedding-accent); font-family: var(--wedding-display); font-size: clamp(2.5rem, 5vw, 4.5rem); }
+.couple-trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.cover-couple { padding: 1rem .5rem; border-top: 1px solid var(--wedding-line); border-bottom: 1px solid var(--wedding-line); }
+.cover-label { display: block; color: var(--wedding-muted); font-size: .58rem; letter-spacing: .08em; }
+.cover-couple h3 { margin: .7rem 0 .2rem; color: var(--wedding-ink); font-family: var(--wedding-display); font-size: clamp(1.45rem, 2.5vw, 2.5rem); font-weight: 600; }
+.cover-couple h3 i { color: var(--wedding-accent); font-weight: 400; }
+.cover-couple p { margin: 0; color: var(--wedding-muted); font-size: .72rem; }
+.cover-feast { display: inline-block; margin-top: 1.6rem; padding: .65rem 1.2rem; border: 1px solid var(--wedding-accent); color: var(--wedding-accent); font-size: .72rem; letter-spacing: .06em; }
+.cover-footer { margin: 2rem 0 0; color: var(--wedding-accent); font-family: var(--wedding-display); font-size: 1.8rem; }
+.cover-caption { align-self: end; padding-bottom: 1rem; color: var(--wedding-muted); }
+.cover-caption span { color: var(--wedding-accent); font-size: .7rem; letter-spacing: .18em; }
+.cover-caption p { font-family: var(--wedding-display); font-size: 1.55rem; line-height: 1.1; }
+.inside-section { padding: clamp(4rem, 9vw, 8rem) clamp(1.3rem, 8vw, 8rem); background: #eee5d7; }
+.inside-heading { max-width: 54rem; margin: 2rem 0 3rem auto; text-align: right; }
+.inside-heading h2 { margin-bottom: 0; }
+.inside-pages { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 76rem; margin: 0 auto; gap: 1.5rem; }
+.inside-page { position: relative; min-height: 34rem; padding: clamp(2rem, 4vw, 4rem); border: 1px solid rgba(155,52,72,.55); outline: 1px solid rgba(155,52,72,.2); outline-offset: -8px; background: #f8f2e8; text-align: center; box-shadow: 0 24px 70px rgba(70,39,40,.08); }
+.inside-page-alt { background: #f3ebdd; }
+.page-ornament { color: var(--wedding-accent); font-size: 1.5rem; }
+.page-kicker { margin: 1rem 0; color: var(--wedding-muted); font-size: .68rem; letter-spacing: .12em; }
+.inside-page h3 { margin: .8rem 0 .2rem; color: var(--wedding-ink); font-family: var(--wedding-display); font-size: clamp(2rem, 3.2vw, 3.2rem); font-weight: 600; }
+.inside-page h3 span { color: var(--wedding-accent); font-weight: 400; }
+.hindi-names { color: var(--wedding-muted); font-size: .86rem; }
+.page-divider { display: flex; align-items: center; gap: 1rem; margin: 2rem 0; color: var(--wedding-gold); font-size: 1.5rem; }
+.page-divider::before, .page-divider::after { flex: 1; height: 1px; background: var(--wedding-line); content: ''; }
+.page-bottom { margin-top: 2.5rem; color: var(--wedding-accent); font-family: var(--wedding-display); font-size: 2.2rem; }
+.page-note { max-width: 27rem; margin: 1rem auto 0; color: var(--wedding-muted); font-size: .85rem; line-height: 1.7; }
+.page-blessing { margin: 2.4rem 0 0; color: var(--wedding-muted); font-size: .9rem; }
+.inside-footnote { margin: 2rem auto 0; color: var(--wedding-muted); text-align: center; font-size: .72rem; letter-spacing: .05em; }
+.celebrations-section { padding: clamp(4rem, 9vw, 9rem) clamp(1.3rem, 8vw, 8rem); }
+.celebrations-title { max-width: 58rem; margin: 2rem 0 3rem auto; text-align: right; }
+.celebrations-title h2 { margin-bottom: .8rem; }
+.celebrations-title > p:last-child { max-width: 36rem; margin-left: auto; color: var(--wedding-muted); font-size: .9rem; line-height: 1.7; }
+.programme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.programme-card { padding: clamp(1.4rem, 3vw, 2.6rem); border: 1px solid var(--wedding-line); background: rgba(255,252,246,.55); }
+.programme-card-second { background: #eee5d7; }
+.programme-card-head { display: flex; align-items: center; gap: 1.2rem; padding-bottom: 1.6rem; border-bottom: 1px solid var(--wedding-line); }
+.date-day { color: var(--wedding-accent); font-family: var(--wedding-display); font-size: 5rem; line-height: .8; }
+.date-month { color: var(--wedding-muted); font-size: .62rem; letter-spacing: .15em; }
+.programme-card-head h3 { margin: .3rem 0; color: var(--wedding-ink); font-family: var(--wedding-display); font-size: 1.55rem; font-weight: 600; }
+.programme-card-head p { margin: 0; color: var(--wedding-muted); font-size: .72rem; }
+.programme-list { margin: 0; padding: 0; list-style: none; }
+.programme-item { display: grid; grid-template-columns: 2rem minmax(0,1fr) auto; align-items: center; gap: .8rem; padding: 1rem 0; border-bottom: 1px solid var(--wedding-line); }
+.programme-index { color: var(--wedding-gold); font-family: var(--wedding-display); font-size: 1.2rem; }
+.programme-main h3 { margin: 0; color: var(--wedding-ink); font-size: .92rem; font-weight: 600; }
+.programme-main p { margin: .2rem 0 0; color: var(--wedding-muted); font-size: .72rem; }
+.programme-time { max-width: 9rem; color: var(--wedding-accent); text-align: right; font-size: .75rem; font-weight: 600; }
+.procession-note { display: flex; gap: 1rem; margin-top: 1.2rem; padding: 1rem; background: rgba(155,52,72,.07); color: var(--wedding-muted); font-size: .8rem; line-height: 1.5; }
+.procession-note strong { flex: 0 0 auto; color: var(--wedding-accent); }
+.venue-section { display: grid; grid-template-columns: 1fr 1fr; min-height: 38rem; background: #e9dfcf; }
+.venue-copy { padding: clamp(4rem, 8vw, 8rem); }
+.venue-copy .eyebrow { margin-top: 3rem; }
+.venue-address { margin: 1.5rem 0; color: var(--wedding-muted); line-height: 1.8; }
+.map-link, .footer-share { display: inline-flex; align-items: center; gap: 1.2rem; padding: .9rem 1.2rem; border: 1px solid var(--wedding-accent); color: var(--wedding-accent); text-decoration: none; font-size: .78rem; font-weight: 600; letter-spacing: .04em; transition: background .25s, color .25s, transform .25s; }
+.map-link:hover, .footer-share:hover { transform: translateY(-2px); color: #fff8ef; background: var(--wedding-accent); }
+.map-caption { color: var(--wedding-muted); font-size: .68rem; }
+.venue-art { position: relative; overflow: hidden; min-height: 32rem; background: radial-gradient(circle at 50% 38%, rgba(169,139,77,.18), transparent 30%), repeating-linear-gradient(135deg, transparent 0 18px, rgba(155,52,72,.04) 19px 20px), #f5efe4; }
+.venue-sun { position: absolute; top: 20%; left: 50%; width: min(28vw, 18rem); aspect-ratio: 1; transform: translateX(-50%); border: 1px solid var(--wedding-gold); border-radius: 50%; box-shadow: 0 0 0 1rem rgba(169,139,77,.06), 0 0 0 2rem rgba(169,139,77,.04); }
+.venue-line { position: absolute; top: 52%; left: 12%; width: 76%; height: 1px; background: var(--wedding-accent); transform: rotate(-20deg); }
+.venue-line-two { transform: rotate(20deg); }
+.venue-label { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); padding: .8rem 1rem; background: var(--wedding-paper); color: var(--wedding-accent); font-size: .7rem; letter-spacing: .2em; white-space: nowrap; }
+.venue-pin { position: absolute; top: 18%; left: 50%; transform: translateX(-50%); color: var(--wedding-accent); font-size: 2rem; }
+.site-footer { position: relative; padding: clamp(5rem, 10vw, 10rem) 1.5rem 2rem; background: var(--wedding-ink); color: #f7efe3; text-align: center; }
+.footer-ganesha { display: grid; place-items: center; width: 4rem; height: 4rem; margin: 0 auto 1.5rem; border: 1px solid rgba(218,192,138,.65); border-radius: 50%; color: #d9c18e; font-family: var(--wedding-display); font-size: 2rem; }
+.site-footer .eyebrow { color: #d9c18e; }
+.site-footer h2 { color: #f7efe3; }
+.site-footer h2 em { color: #d9c18e; }
+.footer-invite { color: #d9c18e; font-family: var(--wedding-display); font-size: 1.5rem; }
+.footer-share { margin-top: 1.5rem; background: transparent; cursor: pointer; font: inherit; border-color: rgba(247,239,227,.6); color: #f7efe3; }
+.footer-share:hover { border-color: #f7efe3; color: var(--wedding-ink); background: #f7efe3; }
+.footer-bottom { display: flex; justify-content: space-between; gap: 1rem; margin-top: clamp(4rem, 8vw, 8rem); padding-top: 1rem; border-top: 1px solid rgba(247,239,227,.2); color: rgba(247,239,227,.62); font-size: .58rem; letter-spacing: .16em; }
+
+@media (max-width: 760px) {
+  .site-nav { grid-template-columns: 2.5rem minmax(0, 1fr) auto auto; gap: .55rem; padding: .8rem 1rem; }
+  .nav-family { font-size: .65rem; letter-spacing: .06em; }
+  .site-nav nav { display: none; }
+  .nav-share { padding: .55rem .65rem; font-size: .65rem; }
+  .language-toggle { padding: .5rem .6rem; font-size: .65rem; }
+  .hero-wrap .scroll-scrub__copy { width: min(100%, 34rem); padding: 1.3rem; }
+  .hero-wrap .scroll-scrub__title { font-size: clamp(3.8rem, 16vw, 5.4rem); }
+  .hero-wrap .scroll-scrub__chapter-pin { align-items: flex-end; }
+  .hero-bottomline { bottom: 1rem; font-size: .5rem; }
+  .intro-band { grid-template-columns: 1fr; gap: 1.4rem; padding: 4rem 1.3rem; }
+  .date-stamp { align-items: flex-start; }
+  .cover-reproduction { grid-template-columns: 1fr; gap: 1rem; padding: 0 1rem 4rem; }
+  .cover-frame { padding: 2rem 1rem; }
+  .couple-trio { grid-template-columns: 1fr; gap: .6rem; }
+  .cover-couple h3 { font-size: 2rem; }
+  .cover-caption { padding: 0 1rem; }
+  .inside-section, .celebrations-section { padding: 4rem 1.2rem; }
+  .inside-heading, .celebrations-title { text-align: left; }
+  .inside-pages, .programme-grid { grid-template-columns: 1fr; }
+  .inside-page { min-height: auto; padding: 2.3rem 1.4rem; }
+  .programme-card { padding: 1.2rem; }
+  .programme-item { grid-template-columns: 1.6rem minmax(0,1fr); }
+  .programme-time { grid-column: 2; max-width: none; text-align: left; }
+  .venue-section { grid-template-columns: 1fr; }
+  .venue-copy { padding: 4rem 1.3rem; }
+  .venue-art { min-height: 22rem; }
+  .venue-sun { width: 12rem; }
+  .footer-bottom { flex-direction: column; align-items: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+.cover-ganesha { overflow: hidden; padding: .25rem; }
+.cover-ganesha img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.source-card-link { display: block; margin-top: 1.5rem; color: var(--wedding-accent); text-decoration: none; }
+.source-card-link img { display: block; width: 100%; max-width: 12rem; margin: 0 auto .6rem; border: 1px solid var(--wedding-line); box-shadow: 0 10px 25px rgba(70,39,40,.1); }
+.source-card-link span { font-size: .65rem; letter-spacing: .05em; }
+.printed-spread { max-width: 58rem; margin: 2.5rem auto 0; }
+.printed-spread a { display: block; border: 1px solid var(--wedding-line); padding: .4rem; background: #f8f2e8; }
+.printed-spread img { display: block; width: 100%; height: auto; }
+.footer-ganesha { overflow: hidden; padding: .2rem; }
+.footer-ganesha img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+@media (max-width: 760px) { .cover-caption { max-width: 100%; } .source-card-link img { max-width: 9rem; margin-left: 0; } }
+
+.cover-script, .cover-topline span:first-child, .cover-footer, .hindi-names, .page-bottom, .page-blessing, .page-note, .footer-invite { font-family: 'Noto Sans Devanagari', sans-serif; }
+
+/* Hindi-first typography across the entire invitation. */
+.wedding-site, .wedding-site button, .wedding-site a, .wedding-site p, .wedding-site h1, .wedding-site h2, .wedding-site h3, .wedding-site span { font-family: 'Noto Sans Devanagari', sans-serif; }
+.hero-wrap .scroll-scrub__title { font-family: 'Noto Sans Devanagari', sans-serif; font-weight: 600; letter-spacing: -.04em; }
+.hero-wrap .scroll-scrub__kicker { font-family: 'Noto Sans Devanagari', sans-serif; }
+
+
+/* English typography and wide-screen layout refinements. */
+.wedding-site.lang-en,
+.wedding-site.lang-en button,
+.wedding-site.lang-en a,
+.wedding-site.lang-en p,
+.wedding-site.lang-en h1,
+.wedding-site.lang-en h2,
+.wedding-site.lang-en h3,
+.wedding-site.lang-en span { font-family: 'DM Sans', sans-serif; }
+.wedding-site.lang-en .intro-copy h2,
+.wedding-site.lang-en .inside-heading h2,
+.wedding-site.lang-en .celebrations-title h2,
+.wedding-site.lang-en .venue-copy h2,
+.wedding-site.lang-en .site-footer h2,
+.wedding-site.lang-en .cover-couple h3,
+.wedding-site.lang-en .programme-card-head h3,
+.wedding-site.lang-en .date-stamp strong { font-family: 'Cormorant Garamond', serif; letter-spacing: -.02em; }
+.wedding-site.lang-en .hero-wrap .scroll-scrub__title,
+.wedding-site.lang-en .hero-wrap .scroll-scrub__kicker { font-family: 'Cormorant Garamond', serif; }
+@media (min-width: 761px) and (max-width: 1100px) {
+  .site-nav { gap: .75rem; padding-inline: 1.25rem; }
+  .nav-family { font-size: .7rem; }
+  .site-nav nav { gap: .8rem; }
+  .site-nav nav a, .nav-share { font-size: .67rem; }
+  .nav-share { padding: .6rem .7rem; }
+  .language-toggle { padding: .52rem .65rem; }
+  .intro-band { grid-template-columns: 1fr 2fr; }
+  .date-stamp { grid-column: 2; align-items: flex-start; }
+  .cover-reproduction { grid-template-columns: minmax(0, 1fr) 10rem; gap: 1.5rem; padding-inline: 1.5rem; }
+  .programme-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  .wedding-site.lang-en .intro-copy h2,
+  .wedding-site.lang-en .inside-heading h2,
+  .wedding-site.lang-en .celebrations-title h2,
+  .wedding-site.lang-en .venue-copy h2,
+  .wedding-site.lang-en .site-footer h2 { line-height: 1.02; }
+}
