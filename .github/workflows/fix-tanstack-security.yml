@@ -1,0 +1,25 @@
+name: Fix TanStack security block
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/fix-tanstack-security.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Upgrade vulnerable TanStack Start
+        working-directory: app
+        run: bun add @tanstack/react-start@^1.168.60
+      - name: Commit security update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/package.json app/bun.lock
+          git commit -m "Fix TanStack Start security advisory"
+          git push
